@@ -3,12 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Google, Facebook, Apple, Linkedin, Twitter, Spotify, Mail } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, setDoc, doc } from "firebase/firestore";
 import bcrypt from "bcryptjs";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, signInWithPopup } from "firebase/auth";
+
+// ✅ Logos sociaux avec react-icons
+import { FcGoogle } from "react-icons/fc";
+import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -138,25 +142,25 @@ export default function LoginPage() {
         {/* Boutons sociaux */}
         <div className="grid grid-cols-1 gap-2">
           <Button variant="outline" onClick={() => handleSocialLogin("google")} className="flex items-center justify-center gap-2">
-            <Google className="w-5 h-5" /> Google
+            <FcGoogle className="w-5 h-5" /> Google
           </Button>
           <Button variant="outline" onClick={() => handleSocialLogin("facebook")} className="flex items-center justify-center gap-2">
-            <Facebook className="w-5 h-5" /> Facebook
+            <FaFacebook className="w-5 h-5 text-blue-600" /> Facebook
           </Button>
           <Button variant="outline" onClick={() => handleSocialLogin("apple")} className="flex items-center justify-center gap-2">
-            <Apple className="w-5 h-5" /> Apple
+            <FaApple className="w-5 h-5" /> Apple
           </Button>
           <Button variant="outline" onClick={() => handleSocialLogin("linkedin")} className="flex items-center justify-center gap-2">
-            <Linkedin className="w-5 h-5" /> LinkedIn
+            <FaLinkedin className="w-5 h-5 text-blue-700" /> LinkedIn
           </Button>
           <Button variant="outline" onClick={() => handleSocialLogin("x")} className="flex items-center justify-center gap-2">
-            <Twitter className="w-5 h-5" /> X
+            <FaTwitter className="w-5 h-5 text-sky-500" /> X (Twitter)
           </Button>
           <Button variant="outline" onClick={() => handleSocialLogin("spotify")} className="flex items-center justify-center gap-2">
-            <Spotify className="w-5 h-5" /> Spotify
+            <FaSpotify className="w-5 h-5 text-green-500" /> Spotify
           </Button>
           <Button variant="outline" onClick={() => handleSocialLogin("microsoft")} className="flex items-center justify-center gap-2">
-            <Mail className="w-5 h-5" /> Microsoft / Outlook
+            <FaMicrosoft className="w-5 h-5 text-blue-500" /> Microsoft / Outlook
           </Button>
         </div>
       </div>
