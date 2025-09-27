@@ -19,14 +19,10 @@ import { Separator } from './ui/separator';
 import { Checkbox } from './ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { hash } from 'bcryptjs';
-import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
 
 const socialProviders = [
   { name: 'Google', icon: <Facebook className="h-5 w-5" /> },
   { name: 'LinkedIn', icon: <Linkedin className="h-5 w-5" /> },
-  // Tu peux compléter avec tous les autres icônes comme Google, Apple, X, etc.
 ];
 
 export function RegisterForm() {
@@ -39,12 +35,12 @@ export function RegisterForm() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+
     const username = formData.get('username') as string;
     const email = formData.get('email') as string;
     const genre = formData.get('genre') as string;
     const isMajor = (formData.get('is-major') as string | null) === 'on';
     const isStudent = (formData.get('is-student') as string | null) === 'on';
-    const profilePicture = (formData.get('profile-picture') as File) || null;
 
     if (password !== confirmPassword) {
       toast({
@@ -67,50 +63,38 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
-      // Vérifier si l'utilisateur existe déjà
-      const userRef = doc(db, 'users', username);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        toast({
-          variant: 'destructive',
-          title: 'Utilisateur existant',
-          description: 'Cet identifiant est déjà utilisé.',
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Hasher le mot de passe
-      const hashedPassword = await hash(password, 10);
-
-      // Créer l'utilisateur dans Firestore
-      await setDoc(userRef, {
-        username,
-        email,
-        password: hashedPassword,
-        genre,
-        isMajor,
-        isStudent,
-        profilePictureUrl: profilePicture ? URL.createObjectURL(profilePicture) : null,
-        createdAt: new Date(),
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifiant: username,
+          email,
+          password,
+          genre,
+          majeur: isMajor,
+          etudiant: isStudent,
+        }),
       });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Erreur lors de l'inscription");
 
       toast({
         title: 'Inscription réussie!',
-        description: 'Bienvenue! Vous pouvez maintenant vous connecter.',
+        description: `Bienvenue ${result.identifiant}! Vous pouvez maintenant vous connecter.`,
       });
 
-      // Réinitialiser le formulaire
+      // Reset form
       setPassword('');
       setConfirmPassword('');
       setCaptchaChecked(false);
       event.currentTarget.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'Erreur',
-        description: 'Une erreur est survenue lors de l’inscription.',
+        description: error.message || 'Une erreur est survenue lors de l’inscription.',
       });
     } finally {
       setIsLoading(false);
@@ -198,18 +182,13 @@ export function RegisterForm() {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="profile-picture">Photo de profil</Label>
-            <Input id="profile-picture" type="file" accept="image/*" />
-          </div>
-
           <div className="flex items-center space-x-2 pt-2">
-            <Checkbox id="is-major" required />
+            <Checkbox id="is-major" name="is-major" required />
             <Label htmlFor="is-major">Je certifie être majeur(e)</Label>
           </div>
 
           <div className="flex items-center space-x-2 pt-2">
-            <Checkbox id="is-student" />
+            <Checkbox id="is-student" name="is-student" />
             <Label htmlFor="is-student">Je suis étudiant(e)</Label>
           </div>
 

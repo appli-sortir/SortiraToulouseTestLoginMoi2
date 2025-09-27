@@ -5,9 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FcGoogle } from "react-icons/fc";
-import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa";
-import { loginWithProvider } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,34 +21,18 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifiant, password }),
       });
+
       const data = await res.json();
+
       if (!res.ok) throw new Error(data.error || "Erreur lors de la connexion");
 
+      // Enregistrer l'utilisateur côté client
       localStorage.setItem("user", JSON.stringify({ identifiant: data.identifiant, email: data.email }));
+
       router.push("/dashboard");
     } catch (err: any) {
       console.error(err);
       setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSocialLogin = async (providerName: string) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const result = await loginWithProvider(providerName);
-      const user = result.user;
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ identifiant: user.displayName || "Utilisateur", email: user.email })
-      );
-      router.push("/dashboard");
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Erreur lors de la connexion sociale");
     } finally {
       setLoading(false);
     }
@@ -74,25 +55,32 @@ export default function LoginPage() {
         >
           {error && <p className="text-red-600">{error}</p>}
 
-          <input type="text" name="identifiant" placeholder="Identifiant" className="w-full p-2 border rounded" required />
-          <input type="password" name="password" placeholder="Mot de passe" className="w-full p-2 border rounded" required />
+          <input
+            type="text"
+            name="identifiant"
+            placeholder="Identifiant"
+            className="w-full p-2 border rounded"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Mot de passe"
+            className="w-full p-2 border rounded"
+            required
+          />
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Connexion..." : "Se connecter"}
           </Button>
         </form>
 
-        <div className="text-center text-sm text-muted-foreground mb-2">Ou connectez-vous avec</div>
-
-        <div className="grid grid-cols-1 gap-2">
-          <Button variant="outline" onClick={() => handleSocialLogin("google")} className="flex items-center justify-center gap-2"><FcGoogle className="w-5 h-5" /> Google</Button>
-          <Button variant="outline" onClick={() => handleSocialLogin("facebook")} className="flex items-center justify-center gap-2"><FaFacebook className="w-5 h-5 text-blue-600" /> Facebook</Button>
-          <Button variant="outline" onClick={() => handleSocialLogin("apple")} className="flex items-center justify-center gap-2"><FaApple className="w-5 h-5" /> Apple</Button>
-          <Button variant="outline" onClick={() => handleSocialLogin("linkedin")} className="flex items-center justify-center gap-2"><FaLinkedin className="w-5 h-5 text-blue-700" /> LinkedIn</Button>
-          <Button variant="outline" onClick={() => handleSocialLogin("x")} className="flex items-center justify-center gap-2"><FaTwitter className="w-5 h-5 text-sky-500" /> X</Button>
-          <Button variant="outline" onClick={() => handleSocialLogin("spotify")} className="flex items-center justify-center gap-2"><FaSpotify className="w-5 h-5 text-green-500" /> Spotify</Button>
-          <Button variant="outline" onClick={() => handleSocialLogin("microsoft")} className="flex items-center justify-center gap-2"><FaMicrosoft className="w-5 h-5 text-blue-500" /> Microsoft</Button>
-        </div>
+        <p className="text-xs text-muted-foreground text-center">
+          Pas encore de compte?{" "}
+          <Link href="/register" className="underline text-primary">
+            Inscrivez-vous
+          </Link>
+        </p>
       </div>
     </div>
   );

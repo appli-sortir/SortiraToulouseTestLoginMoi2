@@ -19,20 +19,6 @@ import { useRouter } from 'next/navigation';
 import { Separator } from './ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
-import { auth } from '@/lib/firebase'; // ton fichier firebase.ts
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider } from 'firebase/auth';
-
-const socialProviders = [
-  { name: 'Google', provider: new GoogleAuthProvider(), color: 'text-[#DB4437]' },
-  { name: 'Facebook', provider: new FacebookAuthProvider(), color: 'text-[#1877F2]' },
-  { name: 'Apple', provider: new OAuthProvider('apple.com'), color: 'text-black' },
-  { name: 'X', provider: new OAuthProvider('twitter.com'), color: 'text-blue-500' },
-  { name: 'Microsoft', provider: new OAuthProvider('microsoft.com'), color: 'text-[#F25022]' },
-  { name: 'LinkedIn', provider: new OAuthProvider('linkedin.com'), color: 'text-[#0A66C2]' },
-  { name: 'Yahoo', provider: new OAuthProvider('yahoo.com'), color: 'text-[#400090]' },
-  { name: 'Spotify', provider: new OAuthProvider('spotify.com'), color: 'text-green-600' },
-];
-
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -43,35 +29,29 @@ export function LoginForm() {
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
-    const email = formData.get('username') as string;
+    const identifiant = formData.get('username') as string;
     const password = formData.get('password') as string;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: 'Connexion réussie', description: 'Bienvenue !' });
-      router.push('/dashboard');
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur de connexion',
-        description: error.message || 'Impossible de se connecter avec cet identifiant',
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifiant, password }),
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleSocialLogin = async (provider: any) => {
-    setIsLoading(true);
-    try {
-      await signInWithPopup(auth, provider);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur lors de la connexion");
+
+      // Enregistrer l'utilisateur en local
+      localStorage.setItem('user', JSON.stringify({ identifiant: data.identifiant, email: data.email }));
+
       toast({ title: 'Connexion réussie', description: 'Bienvenue !' });
       router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Erreur de connexion',
-        description: error.message || `Impossible de se connecter avec ce fournisseur`,
+        description: error.message || 'Impossible de se connecter avec ces identifiants',
       });
     } finally {
       setIsLoading(false);
@@ -112,25 +92,22 @@ export function LoginForm() {
             <p className="text-center bg-card px-2 text-xs text-muted-foreground relative">Ou continuer avec</p>
           </div>
 
+          {/* TODO : si tu veux ajouter les providers sociaux, 
+              tu peux réutiliser la logique de page.tsx → handleSocialLogin() */}
           <TooltipProvider>
             <div className="grid grid-cols-4 gap-2 w-full">
-              {socialProviders.map(sp => (
-                <Tooltip key={sp.name}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className={`h-12 w-full ${sp.color}`}
-                      onClick={() => handleSocialLogin(sp.provider)}
-                    >
-                      {sp.name[0]}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{sp.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-12 w-full">G</Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Google</p></TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-12 w-full">F</Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Facebook</p></TooltipContent>
+              </Tooltip>
             </div>
           </TooltipProvider>
 
