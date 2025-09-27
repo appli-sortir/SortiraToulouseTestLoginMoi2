@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Google, Facebook, Apple, Linkedin, Twitter, Spotify, Mail } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react"; // icônes génériques
+import { FcGoogle } from "react-icons/fc";      // logo Google
+import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa"; // logos marques
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/firebase";
 import { collection, doc, query, where, getDocs, setDoc } from "firebase/firestore";
@@ -13,7 +15,6 @@ import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, signI
 export default function RegisterPage() {
   const router = useRouter();
   const auth = getAuth();
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,7 +42,6 @@ export default function RegisterPage() {
       }
 
       const hashedPassword = await bcrypt.hash(data.password, 10);
-
       const newUserRef = doc(collection(db, "identifiant"));
       await setDoc(newUserRef, {
         identifiant: data.identifiant,
@@ -139,25 +139,25 @@ export default function RegisterPage() {
         {/* Boutons sociaux */}
         <div className="grid grid-cols-1 gap-2">
           <Button variant="outline" onClick={() => handleSocialRegister("google")} className="flex items-center justify-center gap-2">
-            <Google className="w-5 h-5" /> Google
+            <FcGoogle className="w-5 h-5" /> Google
           </Button>
           <Button variant="outline" onClick={() => handleSocialRegister("facebook")} className="flex items-center justify-center gap-2">
-            <Facebook className="w-5 h-5" /> Facebook
+            <FaFacebook className="w-5 h-5 text-blue-600" /> Facebook
           </Button>
           <Button variant="outline" onClick={() => handleSocialRegister("apple")} className="flex items-center justify-center gap-2">
-            <Apple className="w-5 h-5" /> Apple
+            <FaApple className="w-5 h-5" /> Apple
           </Button>
           <Button variant="outline" onClick={() => handleSocialRegister("linkedin")} className="flex items-center justify-center gap-2">
-            <Linkedin className="w-5 h-5" /> LinkedIn
+            <FaLinkedin className="w-5 h-5 text-blue-700" /> LinkedIn
           </Button>
           <Button variant="outline" onClick={() => handleSocialRegister("x")} className="flex items-center justify-center gap-2">
-            <Twitter className="w-5 h-5" /> X
+            <FaTwitter className="w-5 h-5 text-sky-500" /> X (Twitter)
           </Button>
           <Button variant="outline" onClick={() => handleSocialRegister("spotify")} className="flex items-center justify-center gap-2">
-            <Spotify className="w-5 h-5" /> Spotify
+            <FaSpotify className="w-5 h-5 text-green-500" /> Spotify
           </Button>
           <Button variant="outline" onClick={() => handleSocialRegister("microsoft")} className="flex items-center justify-center gap-2">
-            <Mail className="w-5 h-5" /> Microsoft / Outlook
+            <FaMicrosoft className="w-5 h-5 text-blue-500" /> Microsoft / Outlook
           </Button>
         </div>
       </div>
