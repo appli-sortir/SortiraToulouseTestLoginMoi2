@@ -119,18 +119,64 @@ function RegisterForm({ onSubmit, loading, error }: any) {
     <form onSubmit={handleSubmit} className="space-y-4 mb-4">
       {error && <p className="text-red-600">{error}</p>}
 
-      <input type="text" placeholder="Identifiant" value={identifiant} onChange={(e) => setIdentifiant(e.target.value)} className="w-full p-2 border rounded" required />
-      <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-2 border rounded" required />
-      <input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 border rounded" required />
+      <input
+        type="text"
+        placeholder="Identifiant"
+        value={identifiant}
+        onChange={(e) => setIdentifiant(e.target.value)}
+        className="w-full p-2 border rounded"
+        required
+      />
 
-      <select value={genre} onChange={(e) => setGenre(e.target.value as any)} className="w-full p-2 border rounded">
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full p-2 border rounded"
+        required
+      />
+
+      <input
+        type="password"
+        placeholder="Mot de passe"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="w-full p-2 border rounded"
+        required
+      />
+
+      <select
+        value={genre}
+        onChange={(e) => setGenre(e.target.value as any)}
+        className="w-full p-2 border rounded"
+      >
         <option value="Homme">Homme</option>
         <option value="Femme">Femme</option>
         <option value="Autre">Autre</option>
       </select>
 
       <label className="flex items-center gap-2">
-        <input type="checkbox" checked={majeur} onChange={(e) => setMajeur(e.target.checked)} /> Je confirme être majeur
+        <input
+          type="checkbox"
+          checked={majeur}
+          onChange={(e) => setMajeur(e.target.checked)}
+        />{" "}
+        Je confirme être majeur
       </label>
 
-      <label className="
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={etudiant}
+          onChange={(e) => setEtudiant(e.target.checked)}
+        />{" "}
+        Je suis étudiant
+      </label>
+
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Inscription..." : "S'inscrire"}
+      </Button>
+    </form>
+  );
+}
