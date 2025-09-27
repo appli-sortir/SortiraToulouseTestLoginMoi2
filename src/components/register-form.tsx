@@ -39,24 +39,16 @@ export function RegisterForm() {
     const identifiant = formData.get('username') as string;
     const email = formData.get('email') as string;
     const genre = formData.get('genre') as string;
-    const isMajor = (formData.get('is-major') as string | null) === 'on';
-    const isStudent = (formData.get('is-student') as string | null) === 'on';
+    const isMajor = formData.get('is-major') === 'on';
+    const isStudent = formData.get('is-student') === 'on';
 
     if (password !== confirmPassword) {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur',
-        description: 'Les mots de passe ne correspondent pas.',
-      });
+      toast({ variant: 'destructive', title: 'Erreur', description: 'Les mots de passe ne correspondent pas.' });
       return;
     }
 
     if (!captchaChecked) {
-      toast({
-        variant: 'destructive',
-        title: 'Vérification requise',
-        description: 'Veuillez cocher la case "Je ne suis pas un robot".',
-      });
+      toast({ variant: 'destructive', title: 'Vérification requise', description: 'Veuillez cocher la case "Je ne suis pas un robot".' });
       return;
     }
 
@@ -66,35 +58,20 @@ export function RegisterForm() {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifiant,
-          email,
-          password,
-          genre,
-          majeur: isMajor,
-          etudiant: isStudent,
-        }),
+        body: JSON.stringify({ identifiant, email, password, genre, majeur: isMajor, etudiant: isStudent }),
       });
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Erreur lors de l'inscription");
 
-      toast({
-        title: 'Inscription réussie !',
-        description: `Bienvenue ${result.identifiant}! Vous pouvez maintenant vous connecter.`,
-      });
+      toast({ title: 'Inscription réussie !', description: `Bienvenue ${result.identifiant}! Vous pouvez maintenant vous connecter.` });
 
-      // Reset form
       setPassword('');
       setConfirmPassword('');
       setCaptchaChecked(false);
       event.currentTarget.reset();
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur',
-        description: error.message || 'Une erreur est survenue lors de l’inscription.',
-      });
+      toast({ variant: 'destructive', title: 'Erreur', description: error.message || 'Une erreur est survenue.' });
     } finally {
       setIsLoading(false);
     }
@@ -109,77 +86,48 @@ export function RegisterForm() {
 
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {/* Social Login */}
           <TooltipProvider>
             <div className="grid grid-cols-4 gap-2 w-full">
               {socialProviders.map((provider) => (
                 <Tooltip key={provider.name}>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-12 w-full">
-                      {provider.icon}
-                    </Button>
+                    <Button variant="outline" size="icon" className="h-12 w-full">{provider.icon}</Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{provider.name}</p>
-                  </TooltipContent>
+                  <TooltipContent><p>{provider.name}</p></TooltipContent>
                 </Tooltip>
               ))}
             </div>
           </TooltipProvider>
 
-          {/* Separator */}
           <div className="relative w-full">
             <Separator className="absolute top-1/2 -translate-y-1/2" />
-            <p className="text-center bg-card px-2 text-xs text-muted-foreground relative">
-              Ou continuer avec un email
-            </p>
+            <p className="text-center bg-card px-2 text-xs text-muted-foreground relative">Ou continuer avec un email</p>
           </div>
 
-          {/* Identifiant */}
           <div className="space-y-2">
             <Label htmlFor="username">Identifiant</Label>
             <Input id="username" name="username" type="text" placeholder="Choisissez un identifiant" required />
           </div>
 
-          {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" placeholder="Votre adresse email" required />
           </div>
 
-          {/* Password */}
           <div className="space-y-2">
             <Label htmlFor="password">Mot de passe</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <Input id="password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
 
-          {/* Confirm Password */}
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-            <Input
-              id="confirm-password"
-              name="confirm-password"
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+            <Input id="confirm-password" name="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
           </div>
 
-          {/* Genre */}
           <div className="space-y-2">
             <Label htmlFor="genre">Genre</Label>
             <Select name="genre">
-              <SelectTrigger id="genre">
-                <SelectValue placeholder="Sélectionner..." />
-              </SelectTrigger>
+              <SelectTrigger id="genre"><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="homme">Homme</SelectItem>
                 <SelectItem value="femme">Femme</SelectItem>
@@ -189,19 +137,16 @@ export function RegisterForm() {
             </Select>
           </div>
 
-          {/* Majorité */}
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox id="is-major" name="is-major" required />
             <Label htmlFor="is-major">Je certifie être majeur(e)</Label>
           </div>
 
-          {/* Étudiant */}
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox id="is-student" name="is-student" />
             <Label htmlFor="is-student">Je suis étudiant(e)</Label>
           </div>
 
-          {/* Captcha */}
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox id="captcha" onCheckedChange={(checked) => setCaptchaChecked(!!checked)} />
             <Label htmlFor="captcha">Je ne suis pas un robot</Label>
@@ -210,21 +155,10 @@ export function RegisterForm() {
 
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="animate-spin" />
-                <span>Création du compte...</span>
-              </>
-            ) : (
-              "S'inscrire"
-            )}
+            {isLoading ? (<><Loader2 className="animate-spin" />Création du compte...</>) : "S'inscrire"}
           </Button>
-
           <p className="text-xs text-muted-foreground text-center">
-            Déjà un compte?{' '}
-            <Link href="/login" className="underline text-primary">
-              Connectez-vous
-            </Link>
+            Déjà un compte? <Link href="/login" className="underline text-primary">Connectez-vous</Link>
           </p>
         </CardFooter>
       </form>
