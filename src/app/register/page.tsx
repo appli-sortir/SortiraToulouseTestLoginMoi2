@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa";
-import { registerUserEmail, loginWithProvider } from "@/lib/auth";
+import { loginWithProvider } from "@/lib/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
 
   // ---------------------------
-  // Inscription classique (identifiant + email + mot de passe)
+  // Inscription classique
   // ---------------------------
   const handleEmailRegister = async (data: {
     identifiant: string;
@@ -29,34 +29,27 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      await registerUserEmail(
-        data.identifiant,
-        data.email,
-        data.password,
-        "Membre",
-        {
-          genre: data.genre,
-          majeur: data.majeur,
-          etudiant: data.etudiant,
-        }
-      );
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ identifiant: data.identifiant, email: data.email })
-      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Erreur lors de l'inscription");
 
+      localStorage.setItem("user", JSON.stringify({ identifiant: result.identifiant, email: result.email }));
       router.push("/dashboard");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Erreur lors de l'inscription");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   // ---------------------------
-  // Inscription / connexion via provider social
+  // Inscription / connexion sociale
   // ---------------------------
   const handleSocialRegister = async (providerName: string) => {
     setLoading(true);
@@ -88,34 +81,18 @@ export default function RegisterPage() {
           Retour à l'accueil
         </Link>
 
-        {/* Formulaire classique */}
         <RegisterForm onSubmit={handleEmailRegister} loading={loading} error={error} />
 
         <div className="text-center text-sm text-muted-foreground my-4">Ou inscrivez-vous avec</div>
 
-        {/* Boutons sociaux */}
         <div className="grid grid-cols-1 gap-2">
-          <Button variant="outline" onClick={() => handleSocialRegister("google")} className="flex items-center justify-center gap-2">
-            <FcGoogle className="w-5 h-5" /> Google
-          </Button>
-          <Button variant="outline" onClick={() => handleSocialRegister("facebook")} className="flex items-center justify-center gap-2">
-            <FaFacebook className="w-5 h-5 text-blue-600" /> Facebook
-          </Button>
-          <Button variant="outline" onClick={() => handleSocialRegister("apple")} className="flex items-center justify-center gap-2">
-            <FaApple className="w-5 h-5" /> Apple
-          </Button>
-          <Button variant="outline" onClick={() => handleSocialRegister("linkedin")} className="flex items-center justify-center gap-2">
-            <FaLinkedin className="w-5 h-5 text-blue-700" /> LinkedIn
-          </Button>
-          <Button variant="outline" onClick={() => handleSocialRegister("x")} className="flex items-center justify-center gap-2">
-            <FaTwitter className="w-5 h-5 text-sky-500" /> X (Twitter)
-          </Button>
-          <Button variant="outline" onClick={() => handleSocialRegister("spotify")} className="flex items-center justify-center gap-2">
-            <FaSpotify className="w-5 h-5 text-green-500" /> Spotify
-          </Button>
-          <Button variant="outline" onClick={() => handleSocialRegister("microsoft")} className="flex items-center justify-center gap-2">
-            <FaMicrosoft className="w-5 h-5 text-blue-500" /> Microsoft / Outlook
-          </Button>
+          <Button variant="outline" onClick={() => handleSocialRegister("google")} className="flex items-center justify-center gap-2"><FcGoogle className="w-5 h-5" /> Google</Button>
+          <Button variant="outline" onClick={() => handleSocialRegister("facebook")} className="flex items-center justify-center gap-2"><FaFacebook className="w-5 h-5 text-blue-600" /> Facebook</Button>
+          <Button variant="outline" onClick={() => handleSocialRegister("apple")} className="flex items-center justify-center gap-2"><FaApple className="w-5 h-5" /> Apple</Button>
+          <Button variant="outline" onClick={() => handleSocialRegister("linkedin")} className="flex items-center justify-center gap-2"><FaLinkedin className="w-5 h-5 text-blue-700" /> LinkedIn</Button>
+          <Button variant="outline" onClick={() => handleSocialRegister("x")} className="flex items-center justify-center gap-2"><FaTwitter className="w-5 h-5 text-sky-500" /> X</Button>
+          <Button variant="outline" onClick={() => handleSocialRegister("spotify")} className="flex items-center justify-center gap-2"><FaSpotify className="w-5 h-5 text-green-500" /> Spotify</Button>
+          <Button variant="outline" onClick={() => handleSocialRegister("microsoft")} className="flex items-center justify-center gap-2"><FaMicrosoft className="w-5 h-5 text-blue-500" /> Microsoft</Button>
         </div>
       </div>
     </div>
@@ -123,7 +100,7 @@ export default function RegisterPage() {
 }
 
 // ---------------------------
-// Composant RegisterForm
+// Formulaire RegisterForm
 // ---------------------------
 function RegisterForm({ onSubmit, loading, error }: any) {
   const [identifiant, setIdentifiant] = useState("");
@@ -156,13 +133,4 @@ function RegisterForm({ onSubmit, loading, error }: any) {
         <input type="checkbox" checked={majeur} onChange={(e) => setMajeur(e.target.checked)} /> Je confirme être majeur
       </label>
 
-      <label className="flex items-center gap-2">
-        <input type="checkbox" checked={etudiant} onChange={(e) => setEtudiant(e.target.checked)} /> Je suis étudiant
-      </label>
-
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Inscription..." : "S'inscrire"}
-      </Button>
-    </form>
-  );
-}
+      <label className="

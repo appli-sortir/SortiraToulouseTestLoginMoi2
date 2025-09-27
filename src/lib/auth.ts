@@ -1,79 +1,12 @@
-import { db, auth } from "./firebase";
-import { collection, query, where, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  FacebookAuthProvider,
-  OAuthProvider,
-  TwitterAuthProvider,
-  GithubAuthProvider,
-  signOut,
-  UserCredential
-} from "firebase/auth";
-import bcrypt from "bcryptjs";
-
-const usersCollection = "identifiant";
-
-// ---------------------------
-// Inscription email/password
-// ---------------------------
-export async function registerUserEmail(
-  identifiant: string,
-  email: string,
-  password: string,
-  role: string = "Membre",
-  additionalFields: Record<string, any> = {}
-) {
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Crée l'utilisateur dans Firebase Auth
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const uid = userCredential.user.uid;
-
-  // Crée le document Firestore
-  await setDoc(doc(db, usersCollection, uid), {
-    identifiant,
-    email,
-    password: hashedPassword,
-    role,
-    provider: "email",
-    ...additionalFields,
-    createdAt: new Date(),
-  });
-
-  return uid;
-}
-
-// ---------------------------
-// Connexion par identifiant
-// ---------------------------
-export async function loginUserIdentifier(identifiant: string, password: string) {
-  const q = query(collection(db, usersCollection), where("identifiant", "==", identifiant));
-  const querySnapshot = await getDocs(q);
-
-  if (querySnapshot.empty) {
-    throw new Error("Utilisateur non trouvé");
-  }
-
-  const docSnap = querySnapshot.docs[0];
-  const userData = docSnap.data();
-
-  const isPasswordValid = await bcrypt.compare(password, userData.password);
-  if (!isPasswordValid) {
-    throw new Error("Mot de passe incorrect");
-  }
-
-  // Connexion Firebase via l'email associé
-  const credential = await signInWithEmailAndPassword(auth, userData.email, password);
-  return credential;
-}
+// /src/lib/auth.ts
+import { auth, db } from "./firebase";
+import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, TwitterAuthProvider, GithubAuthProvider, signOut, UserCredential } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 // ---------------------------
 // Social login
 // ---------------------------
-export async function loginWithProvider(providerName: string) {
+export async function loginWithProvider(providerName: string): Promise<UserCredential> {
   let provider:
     | GoogleAuthProvider
     | FacebookAuthProvider
@@ -94,10 +27,10 @@ export async function loginWithProvider(providerName: string) {
     default: throw new Error("Provider inconnu");
   }
 
-  const result: UserCredential = await signInWithPopup(auth, provider);
+  const result = await signInWithPopup(auth, provider);
   const user = result.user;
 
-  const userRef = doc(db, usersCollection, user.uid);
+  const userRef = doc(db, "identifiant", user.uid);
   const docSnap = await getDoc(userRef);
 
   if (!docSnap.exists()) {
