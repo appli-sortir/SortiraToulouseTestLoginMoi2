@@ -36,7 +36,7 @@ export function RegisterForm() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
-    const username = formData.get('username') as string;
+    const identifiant = formData.get('username') as string;
     const email = formData.get('email') as string;
     const genre = formData.get('genre') as string;
     const isMajor = (formData.get('is-major') as string | null) === 'on';
@@ -67,7 +67,7 @@ export function RegisterForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifiant: username,
+          identifiant,
           email,
           password,
           genre,
@@ -80,7 +80,7 @@ export function RegisterForm() {
       if (!res.ok) throw new Error(result.error || "Erreur lors de l'inscription");
 
       toast({
-        title: 'Inscription réussie!',
+        title: 'Inscription réussie !',
         description: `Bienvenue ${result.identifiant}! Vous pouvez maintenant vous connecter.`,
       });
 
@@ -90,7 +90,6 @@ export function RegisterForm() {
       setCaptchaChecked(false);
       event.currentTarget.reset();
     } catch (error: any) {
-      console.error(error);
       toast({
         variant: 'destructive',
         title: 'Erreur',
@@ -107,8 +106,10 @@ export function RegisterForm() {
         <CardTitle className="font-headline text-3xl text-primary">Inscription</CardTitle>
         <CardDescription>Créez un compte pour rejoindre la communauté.</CardDescription>
       </CardHeader>
+
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
+          {/* Social Login */}
           <TooltipProvider>
             <div className="grid grid-cols-4 gap-2 w-full">
               {socialProviders.map((provider) => (
@@ -126,6 +127,7 @@ export function RegisterForm() {
             </div>
           </TooltipProvider>
 
+          {/* Separator */}
           <div className="relative w-full">
             <Separator className="absolute top-1/2 -translate-y-1/2" />
             <p className="text-center bg-card px-2 text-xs text-muted-foreground relative">
@@ -133,16 +135,19 @@ export function RegisterForm() {
             </p>
           </div>
 
+          {/* Identifiant */}
           <div className="space-y-2">
             <Label htmlFor="username">Identifiant</Label>
             <Input id="username" name="username" type="text" placeholder="Choisissez un identifiant" required />
           </div>
 
+          {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" placeholder="Votre adresse email" required />
           </div>
 
+          {/* Password */}
           <div className="space-y-2">
             <Label htmlFor="password">Mot de passe</Label>
             <Input
@@ -155,6 +160,7 @@ export function RegisterForm() {
             />
           </div>
 
+          {/* Confirm Password */}
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
             <Input
@@ -167,6 +173,7 @@ export function RegisterForm() {
             />
           </div>
 
+          {/* Genre */}
           <div className="space-y-2">
             <Label htmlFor="genre">Genre</Label>
             <Select name="genre">
@@ -182,16 +189,19 @@ export function RegisterForm() {
             </Select>
           </div>
 
+          {/* Majorité */}
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox id="is-major" name="is-major" required />
             <Label htmlFor="is-major">Je certifie être majeur(e)</Label>
           </div>
 
+          {/* Étudiant */}
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox id="is-student" name="is-student" />
             <Label htmlFor="is-student">Je suis étudiant(e)</Label>
           </div>
 
+          {/* Captcha */}
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox id="captcha" onCheckedChange={(checked) => setCaptchaChecked(!!checked)} />
             <Label htmlFor="captcha">Je ne suis pas un robot</Label>
@@ -209,6 +219,7 @@ export function RegisterForm() {
               "S'inscrire"
             )}
           </Button>
+
           <p className="text-xs text-muted-foreground text-center">
             Déjà un compte?{' '}
             <Link href="/login" className="underline text-primary">
