@@ -27,9 +27,12 @@ export async function registerUserEmail(
   additionalFields: Record<string, any> = {}
 ) {
   const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Crée l'utilisateur dans Firebase Auth
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const uid = userCredential.user.uid;
 
+  // Crée le document Firestore
   await setDoc(doc(db, usersCollection, uid), {
     identifiant,
     email,
@@ -37,16 +40,16 @@ export async function registerUserEmail(
     role,
     provider: "email",
     ...additionalFields,
-    createdAt: new Date()
+    createdAt: new Date(),
   });
 
   return uid;
 }
 
 // ---------------------------
-// Connexion par identifiant (équivalent loginUserEmail pour ton code)
+// Connexion par identifiant
 // ---------------------------
-export async function loginUserEmail(identifiant: string, password: string) {
+export async function loginUserIdentifier(identifiant: string, password: string) {
   const q = query(collection(db, usersCollection), where("identifiant", "==", identifiant));
   const querySnapshot = await getDocs(q);
 
@@ -62,7 +65,7 @@ export async function loginUserEmail(identifiant: string, password: string) {
     throw new Error("Mot de passe incorrect");
   }
 
-  // Connexion via email Firebase
+  // Connexion Firebase via l'email associé
   const credential = await signInWithEmailAndPassword(auth, userData.email, password);
   return credential;
 }
@@ -100,10 +103,10 @@ export async function loginWithProvider(providerName: string) {
   if (!docSnap.exists()) {
     await setDoc(userRef, {
       email: user.email,
-      pseudo: user.displayName || "Nouvel utilisateur",
+      identifiant: user.displayName || "Nouvel utilisateur",
       role: "Membre",
       provider: providerName.toLowerCase(),
-      createdAt: new Date()
+      createdAt: new Date(),
     });
   }
 

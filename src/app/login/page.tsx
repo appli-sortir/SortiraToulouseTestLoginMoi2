@@ -4,9 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa";
-import { Button } from "@/components/ui/button";
 import { loginUserIdentifier, loginWithProvider } from "@/lib/auth";
 
 export default function LoginPage() {
@@ -17,15 +17,11 @@ export default function LoginPage() {
   const handleLogin = async (identifiant: string, password: string) => {
     setLoading(true);
     setError("");
+
     try {
       await loginUserIdentifier(identifiant, password);
 
-      // Stockage local
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ identifiant })
-      );
-
+      localStorage.setItem("user", JSON.stringify({ identifiant }));
       router.push("/dashboard");
     } catch (err: any) {
       console.error(err);
@@ -38,6 +34,7 @@ export default function LoginPage() {
   const handleSocialLogin = async (providerName: string) => {
     setLoading(true);
     setError("");
+
     try {
       const result = await loginWithProvider(providerName);
       const user = result.user;
@@ -64,7 +61,6 @@ export default function LoginPage() {
           Retour à l'accueil
         </Link>
 
-        {/* Formulaire login */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -77,8 +73,22 @@ export default function LoginPage() {
           className="space-y-4 mb-6"
         >
           {error && <p className="text-red-600">{error}</p>}
-          <input type="text" name="identifiant" placeholder="Identifiant" className="w-full p-2 border rounded" required />
-          <input type="password" name="password" placeholder="Mot de passe" className="w-full p-2 border rounded" required />
+
+          <input
+            type="text"
+            name="identifiant"
+            placeholder="Identifiant"
+            className="w-full p-2 border rounded"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Mot de passe"
+            className="w-full p-2 border rounded"
+            required
+          />
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Connexion..." : "Se connecter"}
           </Button>
@@ -86,7 +96,6 @@ export default function LoginPage() {
 
         <div className="text-center text-sm text-muted-foreground mb-2">Ou connectez-vous avec</div>
 
-        {/* Boutons sociaux */}
         <div className="grid grid-cols-1 gap-2">
           <Button variant="outline" onClick={() => handleSocialLogin("google")} className="flex items-center justify-center gap-2">
             <FcGoogle className="w-5 h-5" /> Google
