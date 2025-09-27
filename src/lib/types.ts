@@ -1,0 +1,105 @@
+export interface Event {
+  id: string;
+  name: string;
+  category: Category;
+  date: string;
+  address: string;
+  description: string;
+  longDescription: string;
+  image: string;
+  ticketsUrl?: string;
+  isFavorite?: boolean;
+  location: {
+    lat: number;
+    lng: number;
+  };
+}
+
+export type Category =
+  | 'afterwork'
+  | 'atelier artistique'
+  | 'balade dans la nature'
+  | 'bar, pub'
+  | 'Bien-Être'
+  | 'billard'
+  | 'Blind Test'
+  | 'botanique'
+  | 'bowling'
+  | 'brunch'
+  | 'chant'
+  | 'cinéma'
+  | 'concert'
+  | 'conférence'
+  | 'couture et crochet'
+  | 'cueillette'
+  | 'cuisine'
+  | 'danse'
+  | 'débat'
+  | 'découverte du patrimoine'
+  | 'dessin'
+  | 'discothèque'
+  | 'écologie'
+  | 'écriture'
+  | 'emploi'
+  | 'Escape Game'
+  | 'exposition'
+  | 'impro'
+  | 'informatique'
+  | 'jardinage'
+  | 'jeux'
+  | 'karaoké'
+  | 'langue'
+  | 'Laser Game'
+  | 'lecture'
+  | 'musées'
+  | 'oenologie'
+  | 'peinture'
+  | 'philo'
+  | 'photographie'
+  | 'pique-nique'
+  | 'psycho'
+  | 'randonnée'
+  | 'restaurant'
+  | 'salon de thé'
+  | 'sciences'
+  | 'shopping'
+  | 'soirée entre filles'
+  | 'social'
+  | 'sortie étudiante'
+  | 'sortie en Andorre'
+  | 'sortie en Espagne'
+  | 'spectacle'
+  | 'spiritualité'
+  | 'Stand Up'
+  | 'théâtre'
+  | 'train à 1 euro'
+  | 'vernissage et inauguration'
+  | 'vidéo'
+  | 'visite urbaine'
+  | 'volontariat'
+  | 'voyage'
+  | 'autre sport'
+  | 'camping'
+  | 'fitness'
+  | 'football'
+  | 'jogging'
+  | 'karting'
+  | 'natation'
+  | 'navigation'
+  | 'patinoire'
+  | 'pétanque'
+  | 'plage'
+  | 'rugby'
+  | 'ski'
+  | 'sport de balle ou ballon'
+  | 'squash'
+  | 'tennis'
+  | 'vélo'
+  | 'yoga'
+  // For backwards compatibility with existing events
+  | 'Music'
+  | 'Theater'
+  | 'Sports'
+  | 'Museum'
+  | 'Dining'
+  | 'Park';
