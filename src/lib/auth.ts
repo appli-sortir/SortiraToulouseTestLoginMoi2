@@ -51,7 +51,6 @@ export async function registerUserEmail(
 // 📌 Connexion utilisateur email/password
 // ---------------------------
 export async function loginUserEmail(email: string, password: string) {
-  // Récupération de l'utilisateur Firestore
   const q = doc(db, usersCollection, email);
   const docSnap = await getDoc(q);
 
@@ -73,7 +72,7 @@ export async function loginUserEmail(email: string, password: string) {
 }
 
 // ---------------------------
-// 📌 Login social (Google, Facebook, Microsoft, Apple, LinkedIn, Yahoo, X, Spotify)
+// 📌 Login social
 // ---------------------------
 export async function loginWithProvider(providerName: string) {
   let provider:
@@ -134,8 +133,22 @@ export async function loginWithProvider(providerName: string) {
 }
 
 // ---------------------------
-// 📌 Déconnexion
+// 📌 Déconnexion (fonction existante)
 // ---------------------------
 export async function logoutUser() {
+  await signOut(auth);
+}
+
+// ---------------------------
+// 📌 Ajouts pour layout.tsx
+// ---------------------------
+
+// Récupérer l’utilisateur courant
+export function getCurrentUser() {
+  return auth.currentUser;
+}
+
+// Alias pour compatibilité avec ton layout
+export async function logout() {
   await signOut(auth);
 }
