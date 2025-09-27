@@ -1,5 +1,5 @@
 import { db, auth } from "./firebase";
-import { collection, query, where, getDocs, doc, setDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -14,7 +14,6 @@ import {
 } from "firebase/auth";
 import bcrypt from "bcryptjs";
 
-// Collection des utilisateurs
 const usersCollection = "identifiant";
 
 // ---------------------------
@@ -28,12 +27,9 @@ export async function registerUserEmail(
   additionalFields: Record<string, any> = {}
 ) {
   const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Crée utilisateur dans Firebase Auth avec email
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const uid = userCredential.user.uid;
 
-  // Crée document Firestore avec identifiant comme champ principal
   await setDoc(doc(db, usersCollection, uid), {
     identifiant,
     email,
@@ -48,10 +44,9 @@ export async function registerUserEmail(
 }
 
 // ---------------------------
-// Connexion par identifiant
+// Connexion par identifiant (équivalent loginUserEmail pour ton code)
 // ---------------------------
-export async function loginUserIdentifier(identifiant: string, password: string) {
-  // Cherche l'utilisateur par identifiant
+export async function loginUserEmail(identifiant: string, password: string) {
   const q = query(collection(db, usersCollection), where("identifiant", "==", identifiant));
   const querySnapshot = await getDocs(q);
 
@@ -62,15 +57,13 @@ export async function loginUserIdentifier(identifiant: string, password: string)
   const docSnap = querySnapshot.docs[0];
   const userData = docSnap.data();
 
-  // Vérification mot de passe
   const isPasswordValid = await bcrypt.compare(password, userData.password);
   if (!isPasswordValid) {
     throw new Error("Mot de passe incorrect");
   }
 
-  // Connexion avec Firebase Auth via l’email lié
+  // Connexion via email Firebase
   const credential = await signInWithEmailAndPassword(auth, userData.email, password);
-
   return credential;
 }
 
@@ -120,7 +113,7 @@ export async function loginWithProvider(providerName: string) {
 // ---------------------------
 // Déconnexion
 // ---------------------------
-export async function logoutUser() {
+export async function logout() {
   await signOut(auth);
 }
 
