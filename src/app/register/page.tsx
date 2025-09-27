@@ -14,9 +14,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ---------------------------
-  // Inscription classique
-  // ---------------------------
   const handleEmailRegister = async (data: {
     identifiant: string;
     email: string;
@@ -27,7 +24,6 @@ export default function RegisterPage() {
   }) => {
     setLoading(true);
     setError("");
-
     try {
       await registerUserEmail(
         data.identifiant,
@@ -37,11 +33,10 @@ export default function RegisterPage() {
         {
           genre: data.genre,
           majeur: data.majeur,
-          etudiant: data.etudiant,
+          etudiant: data.etudiant
         }
       );
 
-      // Sauvegarde local
       localStorage.setItem(
         "user",
         JSON.stringify({ identifiant: data.identifiant, email: data.email })
@@ -56,13 +51,9 @@ export default function RegisterPage() {
     }
   };
 
-  // ---------------------------
-  // Inscription / connexion via provider social
-  // ---------------------------
   const handleSocialRegister = async (providerName: string) => {
     setLoading(true);
     setError("");
-
     try {
       const result = await loginWithProvider(providerName);
       const user = result.user;
@@ -89,12 +80,10 @@ export default function RegisterPage() {
           Retour à l'accueil
         </Link>
 
-        {/* Formulaire classique */}
         <RegisterForm onSubmit={handleEmailRegister} loading={loading} error={error} />
 
         <div className="text-center text-sm text-muted-foreground my-4">Ou inscrivez-vous avec</div>
 
-        {/* Boutons sociaux */}
         <div className="grid grid-cols-1 gap-2">
           <Button variant="outline" onClick={() => handleSocialRegister("google")} className="flex items-center justify-center gap-2">
             <FcGoogle className="w-5 h-5" /> Google
@@ -123,9 +112,6 @@ export default function RegisterPage() {
   );
 }
 
-// ---------------------------
-// RegisterForm adapté
-// ---------------------------
 function RegisterForm({ onSubmit, loading, error }: any) {
   const [identifiant, setIdentifiant] = useState("");
   const [email, setEmail] = useState("");
@@ -142,7 +128,6 @@ function RegisterForm({ onSubmit, loading, error }: any) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 mb-4">
       {error && <p className="text-red-600">{error}</p>}
-
       <input type="text" placeholder="Identifiant" value={identifiant} onChange={(e) => setIdentifiant(e.target.value)} className="w-full p-2 border rounded" required />
       <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-2 border rounded" required />
       <input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 border rounded" required />

@@ -7,20 +7,18 @@ import { ArrowLeft } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import { loginUserEmail, loginWithProvider } from "@/lib/auth";
+import { loginUserIdentifier, loginWithProvider } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ----------- Connexion classique (identifiant + mot de passe) -----------
   const handleLogin = async (identifiant: string, password: string) => {
     setLoading(true);
     setError("");
-
     try {
-      await loginUserEmail(identifiant, password);
+      await loginUserIdentifier(identifiant, password);
 
       // Stockage local
       localStorage.setItem(
@@ -37,11 +35,9 @@ export default function LoginPage() {
     }
   };
 
-  // ----------- Connexion sociale -----------
   const handleSocialLogin = async (providerName: string) => {
     setLoading(true);
     setError("");
-
     try {
       const result = await loginWithProvider(providerName);
       const user = result.user;
@@ -68,7 +64,7 @@ export default function LoginPage() {
           Retour à l'accueil
         </Link>
 
-        {/* Formulaire classique */}
+        {/* Formulaire login */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
