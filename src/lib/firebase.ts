@@ -1,31 +1,23 @@
 // /src/lib/firebase.ts
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// ⚠️ Ces variables doivent être définies dans ton .env.local
-// Exemple de .env.local :
-// NEXT_PUBLIC_FIREBASE_API_KEY=xxxx
-// NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=xxxx.firebaseapp.com
-// NEXT_PUBLIC_FIREBASE_PROJECT_ID=xxxx
-// NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=xxxx.appspot.com
-// NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=xxxx
-// NEXT_PUBLIC_FIREBASE_APP_ID=xxxx
-
+// ⚠️ Vérifie que tes variables d'environnement NEXT_PUBLIC_* sont bien définies
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
 
-// 🔹 On évite de réinitialiser Firebase plusieurs fois (bug sur Next.js hot reload)
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
+// 🔹 Initialisation uniquement côté client
+let app;
+if (typeof window !== "undefined") {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+}
 
-// 🔹 Firestore
-export const db = getFirestore(app);
-
-// 🔹 Authentification Firebase (utile pour login social Google, Facebook, etc.)
-export const auth = getAuth(app);
+export const db = typeof window !== "undefined" ? getFirestore(app!) : null;
+export const auth = typeof window !== "undefined" ? getAuth(app!) : null;
