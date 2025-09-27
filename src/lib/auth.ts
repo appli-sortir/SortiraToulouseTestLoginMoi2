@@ -1,5 +1,5 @@
 import { db, auth } from "./firebase";
-import { collection, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, setDoc } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -14,32 +14,32 @@ import {
 } from "firebase/auth";
 import bcrypt from "bcryptjs";
 
-// Nom de la collection pour tes utilisateurs
+// Collection des utilisateurs
 const usersCollection = "identifiant";
 
 // ---------------------------
-// 📌 Création utilisateur email/password
+// Inscription email/password
 // ---------------------------
 export async function registerUserEmail(
+  identifiant: string,
   email: string,
   password: string,
-  pseudo: string,
   role: string = "Membre",
   additionalFields: Record<string, any> = {}
 ) {
-  // Hash du mot de passe
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Création dans Firebase Auth
+  // Crée utilisateur dans Firebase Auth avec email
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const uid = userCredential.user.uid;
 
-  // Création dans Firestore
+  // Crée document Firestore avec identifiant comme champ principal
   await setDoc(doc(db, usersCollection, uid), {
+    identifiant,
     email,
-    pseudo,
-    password: hashedPassword, // On ne stocke jamais le mot de passe en clair
+    password: hashedPassword,
     role,
+    provider: "email",
     ...additionalFields,
     createdAt: new Date()
   });
@@ -48,31 +48,34 @@ export async function registerUserEmail(
 }
 
 // ---------------------------
-// 📌 Connexion utilisateur email/password
+// Connexion par identifiant
 // ---------------------------
-export async function loginUserEmail(email: string, password: string) {
-  const q = doc(db, usersCollection, email);
-  const docSnap = await getDoc(q);
+export async function loginUserIdentifier(identifiant: string, password: string) {
+  // Cherche l'utilisateur par identifiant
+  const q = query(collection(db, usersCollection), where("identifiant", "==", identifiant));
+  const querySnapshot = await getDocs(q);
 
-  if (!docSnap.exists()) {
+  if (querySnapshot.empty) {
     throw new Error("Utilisateur non trouvé");
   }
 
+  const docSnap = querySnapshot.docs[0];
   const userData = docSnap.data();
 
-  // Vérification du mot de passe
+  // Vérification mot de passe
   const isPasswordValid = await bcrypt.compare(password, userData.password);
   if (!isPasswordValid) {
     throw new Error("Mot de passe incorrect");
   }
 
-  // Connexion avec Firebase Auth
-  const credential = await signInWithEmailAndPassword(auth, email, password);
+  // Connexion avec Firebase Auth via l’email lié
+  const credential = await signInWithEmailAndPassword(auth, userData.email, password);
+
   return credential;
 }
 
 // ---------------------------
-// 📌 Login social
+// Social login
 // ---------------------------
 export async function loginWithProvider(providerName: string) {
   let provider:
@@ -83,39 +86,21 @@ export async function loginWithProvider(providerName: string) {
     | GithubAuthProvider;
 
   switch (providerName.toLowerCase()) {
-    case "google":
-      provider = new GoogleAuthProvider();
-      break;
-    case "facebook":
-      provider = new FacebookAuthProvider();
-      break;
-    case "microsoft":
-      provider = new OAuthProvider("microsoft.com");
-      break;
-    case "apple":
-      provider = new OAuthProvider("apple.com");
-      break;
-    case "linkedin":
-      provider = new OAuthProvider("linkedin.com");
-      break;
-    case "yahoo":
-      provider = new OAuthProvider("yahoo.com");
-      break;
+    case "google": provider = new GoogleAuthProvider(); break;
+    case "facebook": provider = new FacebookAuthProvider(); break;
+    case "microsoft": provider = new OAuthProvider("microsoft.com"); break;
+    case "apple": provider = new OAuthProvider("apple.com"); break;
+    case "linkedin": provider = new OAuthProvider("linkedin.com"); break;
+    case "yahoo": provider = new OAuthProvider("yahoo.com"); break;
     case "x":
-    case "twitter":
-      provider = new TwitterAuthProvider();
-      break;
-    case "spotify":
-      provider = new OAuthProvider("spotify.com");
-      break;
-    default:
-      throw new Error("Provider inconnu");
+    case "twitter": provider = new TwitterAuthProvider(); break;
+    case "spotify": provider = new OAuthProvider("spotify.com"); break;
+    default: throw new Error("Provider inconnu");
   }
 
   const result: UserCredential = await signInWithPopup(auth, provider);
   const user = result.user;
 
-  // Vérification / création dans Firestore
   const userRef = doc(db, usersCollection, user.uid);
   const docSnap = await getDoc(userRef);
 
@@ -133,22 +118,15 @@ export async function loginWithProvider(providerName: string) {
 }
 
 // ---------------------------
-// 📌 Déconnexion (fonction existante)
+// Déconnexion
 // ---------------------------
 export async function logoutUser() {
   await signOut(auth);
 }
 
 // ---------------------------
-// 📌 Ajouts pour layout.tsx
+// Utilisateur courant
 // ---------------------------
-
-// Récupérer l’utilisateur courant
 export function getCurrentUser() {
   return auth.currentUser;
-}
-
-// Alias pour compatibilité avec ton layout
-export async function logout() {
-  await signOut(auth);
 }

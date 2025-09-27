@@ -3,18 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Mail } from "lucide-react"; // icônes génériques
-import { FcGoogle } from "react-icons/fc";      // logo Google
-import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa"; // logos marques
+import { ArrowLeft } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
+import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import { db } from "@/lib/firebase";
-import { collection, doc, query, where, getDocs, setDoc } from "firebase/firestore";
-import bcrypt from "bcryptjs";
-import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, signInWithPopup } from "firebase/auth";
+import { registerUserEmail, loginWithProvider } from "@/lib/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const auth = getAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,35 +29,28 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      const q = query(collection(db, "identifiant"), where("email", "==", data.email));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        setError("Cet email est déjà utilisé.");
-        setLoading(false);
-        return;
-      }
+      await registerUserEmail(
+        data.identifiant,
+        data.email,
+        data.password,
+        "Membre",
+        {
+          genre: data.genre,
+          majeur: data.majeur,
+          etudiant: data.etudiant,
+        }
+      );
 
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-      const newUserRef = doc(collection(db, "identifiant"));
-      await setDoc(newUserRef, {
-        identifiant: data.identifiant,
-        email: data.email,
-        password: hashedPassword,
-        genre: data.genre,
-        majeur: data.majeur,
-        etudiant: data.etudiant,
-        role: "Membre",
-      });
-
+      // Sauvegarde local
       localStorage.setItem(
         "user",
-        JSON.stringify({ uid: newUserRef.id, identifiant: data.identifiant, email: data.email })
+        JSON.stringify({ identifiant: data.identifiant, email: data.email })
       );
 
       router.push("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Erreur lors de l'inscription");
+      setError(err.message || "Erreur lors de l'inscription");
     } finally {
       setLoading(false);
     }
@@ -75,43 +64,12 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      let provider: any;
-      switch (providerName) {
-        case "google": provider = new GoogleAuthProvider(); break;
-        case "facebook": provider = new FacebookAuthProvider(); break;
-        case "apple": provider = new OAuthProvider("apple.com"); break;
-        case "linkedin": provider = new OAuthProvider("linkedin.com"); break;
-        case "yahoo": provider = new OAuthProvider("yahoo.com"); break;
-        case "x": provider = new OAuthProvider("twitter.com"); break;
-        case "spotify": provider = new OAuthProvider("spotify.com"); break;
-        case "microsoft": provider = new OAuthProvider("microsoft.com"); break;
-        default: throw new Error("Provider inconnu");
-      }
-
-      const result = await signInWithPopup(auth, provider);
+      const result = await loginWithProvider(providerName);
       const user = result.user;
-      if (!user || !user.uid) throw new Error("Impossible de récupérer l'utilisateur");
-
-      // Vérifier si l'utilisateur existe déjà
-      const docRef = doc(db, "identifiant", user.uid);
-      const q = query(collection(db, "identifiant"), where("email", "==", user.email));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        // Nouveau utilisateur -> créer Firestore
-        await setDoc(docRef, {
-          identifiant: user.displayName || "Utilisateur",
-          email: user.email,
-          role: "Membre",
-          genre: "Non défini",
-          etudiant: false,
-          majeur: true,
-        });
-      }
 
       localStorage.setItem(
         "user",
-        JSON.stringify({ uid: user.uid, identifiant: user.displayName || "Utilisateur", email: user.email })
+        JSON.stringify({ identifiant: user.displayName || "Utilisateur", email: user.email })
       );
 
       router.push("/dashboard");

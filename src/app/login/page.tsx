@@ -3,58 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, setDoc, doc } from "firebase/firestore";
-import bcrypt from "bcryptjs";
-import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, signInWithPopup } from "firebase/auth";
-
-// ✅ Logos sociaux avec react-icons
+import { ArrowLeft } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaApple, FaLinkedin, FaTwitter, FaSpotify, FaMicrosoft } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
+import { loginUserEmail, loginWithProvider } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const auth = getAuth();
-
-  // ----------- Connexion classique -----------
-  const handleEmailLogin = async (email: string, password: string) => {
+  // ----------- Connexion classique (identifiant + mot de passe) -----------
+  const handleLogin = async (identifiant: string, password: string) => {
     setLoading(true);
     setError("");
 
     try {
-      const q = query(collection(db, "identifiant"), where("email", "==", email));
-      const querySnapshot = await getDocs(q);
+      await loginUserEmail(identifiant, password);
 
-      if (querySnapshot.empty) {
-        setError("Utilisateur non trouvé");
-        setLoading(false);
-        return;
-      }
-
-      const docSnap = querySnapshot.docs[0];
-      const userData = docSnap.data();
-
-      const passwordMatch = await bcrypt.compare(password, userData.password);
-      if (!passwordMatch) {
-        setError("Mot de passe incorrect");
-        setLoading(false);
-        return;
-      }
-
+      // Stockage local
       localStorage.setItem(
         "user",
-        JSON.stringify({ uid: docSnap.id, identifiant: userData.identifiant, email: userData.email })
+        JSON.stringify({ identifiant })
       );
 
       router.push("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Erreur lors de la connexion");
+      setError(err.message || "Erreur lors de la connexion");
+    } finally {
       setLoading(false);
     }
   };
@@ -65,39 +43,12 @@ export default function LoginPage() {
     setError("");
 
     try {
-      let provider: any;
-      switch (providerName) {
-        case "google": provider = new GoogleAuthProvider(); break;
-        case "facebook": provider = new FacebookAuthProvider(); break;
-        case "apple": provider = new OAuthProvider("apple.com"); break;
-        case "linkedin": provider = new OAuthProvider("linkedin.com"); break;
-        case "yahoo": provider = new OAuthProvider("yahoo.com"); break;
-        case "x": provider = new OAuthProvider("twitter.com"); break;
-        case "spotify": provider = new OAuthProvider("spotify.com"); break;
-        case "microsoft": provider = new OAuthProvider("microsoft.com"); break;
-        default: throw new Error("Provider inconnu");
-      }
-
-      const result = await signInWithPopup(auth, provider);
+      const result = await loginWithProvider(providerName);
       const user = result.user;
-      if (!user || !user.uid) throw new Error("Impossible de récupérer l'utilisateur");
-
-      const docRef = doc(db, "identifiant", user.uid);
-      const docSnap = await getDocs(query(collection(db, "identifiant"), where("email", "==", user.email)));
-
-      if (docSnap.empty) {
-        await setDoc(docRef, {
-          identifiant: user.displayName || "Utilisateur",
-          email: user.email,
-          role: "Membre",
-          genre: "Non défini",
-          etudiant: false,
-        });
-      }
 
       localStorage.setItem(
         "user",
-        JSON.stringify({ uid: user.uid, identifiant: user.displayName || "Utilisateur", email: user.email })
+        JSON.stringify({ identifiant: user.displayName || "Utilisateur", email: user.email })
       );
 
       router.push("/dashboard");
@@ -122,15 +73,15 @@ export default function LoginPage() {
           onSubmit={(e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
-            handleEmailLogin(
-              formData.get("email") as string,
+            handleLogin(
+              formData.get("identifiant") as string,
               formData.get("password") as string
             );
           }}
           className="space-y-4 mb-6"
         >
           {error && <p className="text-red-600">{error}</p>}
-          <input type="email" name="email" placeholder="Email" className="w-full p-2 border rounded" required />
+          <input type="text" name="identifiant" placeholder="Identifiant" className="w-full p-2 border rounded" required />
           <input type="password" name="password" placeholder="Mot de passe" className="w-full p-2 border rounded" required />
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Connexion..." : "Se connecter"}
