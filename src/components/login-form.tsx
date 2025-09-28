@@ -12,47 +12,63 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Facebook, Linkedin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Separator } from './ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { useRouter } from 'next/navigation'; // Import du useRouter pour la redirection client-side
+
+// Simulation des fournisseurs sociaux (à implémenter côté backend)
+const socialProviders = [
+  { name: 'Google', icon: <Facebook className="h-5 w-5" /> },
+  { name: 'LinkedIn', icon: <Linkedin className="h-5 w-5" /> },
+];
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [identifiant, setIdentifiant] = useState('');
+  const [password, setPassword] = useState('');
   const { toast } = useToast();
-  const router = useRouter();
+  const router = useRouter(); // Initialisation du hook useRouter
 
-  const handleEmailLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!identifiant || !password) {
+      toast({ variant: 'destructive', title: 'Erreur', description: 'Veuillez saisir votre identifiant et votre mot de passe.' });
+      return;
+    }
+
     setIsLoading(true);
 
-    const formData = new FormData(event.currentTarget);
-    const identifiant = formData.get('username') as string;
-    const password = formData.get('password') as string;
-
     try {
+      // Appel à votre route API de connexion
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifiant, password }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur lors de la connexion");
+      const result = await res.json();
 
-      // Enregistrer l'utilisateur en local
-      localStorage.setItem('user', JSON.stringify({ identifiant: data.identifiant, email: data.email }));
+      if (!res.ok) {
+        // Le backend doit renvoyer un statut 4xx en cas d'échec (ex: identifiants invalides)
+        throw new Error(result.error || 'Identifiant ou mot de passe incorrect.');
+      }
 
-      toast({ title: 'Connexion réussie', description: 'Bienvenue !' });
-      router.push('/dashboard');
+      // Connexion réussie : le backend doit envoyer un jeton de session/cookie
+      toast({ title: 'Connexion réussie !', description: `Bienvenue ${result.identifiant} ! Vous allez être redirigé(e).` });
+      
+      // Redirection vers le tableau de bord après succès
+      router.push('/dashboard'); 
+      
+      // Nettoyage des champs
+      setIdentifiant('');
+      setPassword('');
+
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur de connexion',
-        description: error.message || 'Impossible de se connecter avec ces identifiants',
-      });
+      toast({ variant: 'destructive', title: 'Erreur de connexion', description: error.message || 'Une erreur inattendue est survenue.' });
     } finally {
       setIsLoading(false);
     }
@@ -62,60 +78,65 @@ export function LoginForm() {
     <Card className="w-full max-w-md border-primary/20 shadow-lg">
       <CardHeader>
         <CardTitle className="font-headline text-3xl text-primary">Connexion</CardTitle>
-        <CardDescription>
-          Accédez à votre compte pour gérer vos sorties.
-        </CardDescription>
+        <CardDescription>Entrez vos identifiants ou utilisez les réseaux sociaux.</CardDescription>
       </CardHeader>
 
-      <form onSubmit={handleEmailLogin}>
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Email ou Identifiant</Label>
-            <Input id="username" name="username" type="text" placeholder="Votre email ou identifiant" required />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Link href="#" className="text-sm text-primary hover:underline">Mot de passe oublié ?</Link>
+          <TooltipProvider>
+            <div className="grid grid-cols-4 gap-2 w-full">
+              {socialProviders.map((provider) => (
+                <Tooltip key={provider.name}>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-12 w-full">{provider.icon}</Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>{provider.name}</p></TooltipContent>
+                </Tooltip>
+              ))}
             </div>
-            <Input id="password" name="password" type="password" required />
+          </TooltipProvider>
+
+          <div className="relative w-full">
+            <Separator className="absolute top-1/2 -translate-y-1/2" />
+            <p className="text-center bg-card px-2 text-xs text-muted-foreground relative">Ou avec identifiant/email</p>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="identifiant">Identifiant ou Email</Label>
+            <Input 
+              id="identifiant" 
+              name="identifiant" 
+              type="text" 
+              placeholder="Votre identifiant ou email" 
+              value={identifiant} 
+              onChange={(e) => setIdentifiant(e.target.value)} 
+              required 
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Mot de passe</Label>
+            <Input 
+              id="password" 
+              name="password" 
+              type="password" 
+              placeholder="Votre mot de passe"
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
+          </div>
+          <Link href="/forgot-password" className="text-sm text-primary hover:underline block text-right">
+            Mot de passe oublié ?
+          </Link>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <Loader2 className="animate-spin" /> : 'Se connecter'}
+            {isLoading ? (<><Loader2 className="animate-spin mr-2" />Connexion...</>) : "Se connecter"}
           </Button>
-
-          <div className="relative w-full">
-            <Separator className="absolute top-1/2 -translate-y-1/2" />
-            <p className="text-center bg-card px-2 text-xs text-muted-foreground relative">Ou continuer avec</p>
-          </div>
-
-          {/* TODO : si tu veux ajouter les providers sociaux, 
-              tu peux réutiliser la logique de page.tsx → handleSocialLogin() */}
-          <TooltipProvider>
-            <div className="grid grid-cols-4 gap-2 w-full">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-12 w-full">G</Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Google</p></TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-12 w-full">F</Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Facebook</p></TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
-
           <p className="text-xs text-muted-foreground text-center">
-            Pas encore de compte?{' '}
-            <Link href="/register" className="underline text-primary">
-              Inscrivez-vous
-            </Link>
+            Pas encore de compte? <Link href="/register" className="underline text-primary">Créez-en un</Link>
           </p>
         </CardFooter>
       </form>

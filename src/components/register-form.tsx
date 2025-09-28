@@ -19,6 +19,7 @@ import { Separator } from './ui/separator';
 import { Checkbox } from './ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { useRouter } from 'next/navigation'; // Ajout pour la redirection
 
 const socialProviders = [
   { name: 'Google', icon: <Facebook className="h-5 w-5" /> },
@@ -28,6 +29,9 @@ const socialProviders = [
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
+  
+  // États pour les validations locales
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [captchaChecked, setCaptchaChecked] = useState(false);
@@ -58,20 +62,33 @@ export function RegisterForm() {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifiant, email, password, genre, majeur: isMajor, etudiant: isStudent }),
+        body: JSON.stringify({ 
+          identifiant, 
+          email, 
+          password, 
+          genre, 
+          majeur: isMajor, 
+          etudiant: isStudent 
+        }),
       });
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Erreur lors de l'inscription");
 
-      toast({ title: 'Inscription réussie !', description: `Bienvenue ${result.identifiant}! Vous pouvez maintenant vous connecter.` });
+      toast({ 
+        title: 'Inscription réussie !', 
+        description: `Bienvenue ${result.identifiant}! Vous pouvez maintenant vous connecter.` 
+      });
 
+      // Nettoyage et redirection
       setPassword('');
       setConfirmPassword('');
       setCaptchaChecked(false);
       event.currentTarget.reset();
+      router.push('/login'); // Redirige l'utilisateur vers la page de connexion
+
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Erreur', description: error.message || 'Une erreur est survenue.' });
+      toast({ variant: 'destructive', title: 'Erreur', description: error.message || 'Une erreur est survenue lors de l\'inscription.' });
     } finally {
       setIsLoading(false);
     }
@@ -116,12 +133,26 @@ export function RegisterForm() {
 
           <div className="space-y-2">
             <Label htmlFor="password">Mot de passe</Label>
-            <Input id="password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <Input 
+              id="password" 
+              name="password" 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-            <Input id="confirm-password" name="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+            <Input 
+              id="confirm-password" 
+              name="confirm-password" 
+              type="password" 
+              value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)} 
+              required 
+            />
           </div>
 
           <div className="space-y-2">
@@ -154,8 +185,8 @@ export function RegisterForm() {
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (<><Loader2 className="animate-spin" />Création du compte...</>) : "S'inscrire"}
+          <Button type="submit" className="w-full" disabled={isLoading || password !== confirmPassword || !captchaChecked}>
+            {isLoading ? (<><Loader2 className="animate-spin mr-2" />Création du compte...</>) : "S'inscrire"}
           </Button>
           <p className="text-xs text-muted-foreground text-center">
             Déjà un compte? <Link href="/login" className="underline text-primary">Connectez-vous</Link>

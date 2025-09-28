@@ -16,7 +16,7 @@ export default function RegisterPage() {
           Retour à l'accueil
         </Link>
 
-        {/* 👉 ton RegisterForm fait déjà tout (formulaire + validation) */}
+        {/* Le composant RegisterForm gère toute la logique d'inscription */}
         <RegisterForm />
       </div>
     </div>

@@ -1,33 +1,59 @@
-// /src/pages/api/login.ts
-import type { NextApiRequest, NextApiResponse } from "next";
-import { db, auth } from "@/lib/firebase";
+import { NextResponse } from "next/server";
+import { db } from "@/lib/firebase"; 
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs"; 
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-
-  const { identifiant, password } = req.body;
-
+// Cette fonction gère la requête POST pour la connexion (Login).
+export async function POST(req: Request) {
   try {
-    const q = query(collection(db, "identifiant"), where("identifiant", "==", identifiant));
-    const querySnapshot = await getDocs(q);
+    const { identifiant, password } = await req.json(); // L'identifiant est l'email
 
-    if (querySnapshot.empty) return res.status(404).json({ error: "Utilisateur non trouvé" });
+    // 1. Validation de base
+    if (!identifiant || !password) {
+      return NextResponse.json({ error: "L'email et le mot de passe sont requis." }, { status: 400 });
+    }
+    
+    // 2. Recherche de l'utilisateur par email dans Firestore
+    const usersRef = collection(db, "users");
+    // L'identifiant est supposé être l'email
+    const q = query(usersRef, where("email", "==", identifiant));
+    const userSnapshot = await getDocs(q);
 
-    const docSnap = querySnapshot.docs[0];
-    const userData = docSnap.data();
+    if (userSnapshot.empty) {
+        // Retourne un message générique pour ne pas révéler si l'email existe ou non
+        return NextResponse.json({ error: "Identifiants invalides." }, { status: 401 }); 
+    }
 
-    const isValid = await bcrypt.compare(password, userData.password);
-    if (!isValid) return res.status(401).json({ error: "Mot de passe incorrect" });
+    // Un seul document devrait correspondre à l'email
+    const userDoc = userSnapshot.docs[0];
+    const userData = userDoc.data();
+    const hashedPassword = userData.password; // Mot de passe haché stocké
 
-    // Connexion Firebase via email
-    await signInWithEmailAndPassword(auth, userData.email, password);
+    // 3. Comparaison du mot de passe en clair avec le hachage stocké
+    const isPasswordValid = await bcrypt.compare(password, hashedPassword);
 
-    return res.status(200).json({ identifiant: userData.identifiant, email: userData.email });
+    if (!isPasswordValid) {
+        // Mot de passe incorrect
+        return NextResponse.json({ error: "Identifiants invalides." }, { status: 401 });
+    }
+    
+    // 4. Succès de la connexion
+    // Dans une application réelle, vous généreriez ici un jeton de session sécurisé (JWT) 
+    // ou vous configuriez un cookie de session.
+    
+    // On retire le mot de passe avant de retourner les données
+    const { password: _, ...userInfo } = userData; 
+
+    return NextResponse.json({ success: true, user: userInfo }, { 
+        status: 200,
+        // Envisager ici de définir un cookie de session sécurisé (HttpOnly, Secure)
+    });
+
   } catch (err: any) {
-    console.error(err);
-    return res.status(500).json({ error: err.message || "Erreur serveur" });
+    console.error("Erreur lors de la connexion API (Firestore):", err.message);
+    return NextResponse.json(
+      { error: "Erreur serveur lors de la connexion. Veuillez vérifier les logs." },
+      { status: 500 }
+    );
   }
 }
