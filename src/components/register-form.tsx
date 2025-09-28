@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { Loader2, Facebook, Linkedin } from 'lucide-react';
+import { Loader2, Apple, Facebook, Google, Instagram, Linkedin, Microsoft, Spotify, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Separator } from './ui/separator';
@@ -22,8 +22,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useRouter } from 'next/navigation'; // Ajout pour la redirection
 
 const socialProviders = [
-  { name: 'Google', icon: <Facebook className="h-5 w-5" /> },
+  { name: 'Apple', icon: <Facebook className="h-5 w-5" /> },
+  { name: 'Facebook', icon: <Linkedin className="h-5 w-5" /> },
+  { name: 'Google', icon: <Linkedin className="h-5 w-5" /> },
+  { name: 'Instagram', icon: <Linkedin className="h-5 w-5" /> },
   { name: 'LinkedIn', icon: <Linkedin className="h-5 w-5" /> },
+  { name: 'Microsoft', icon: <Linkedin className="h-5 w-5" /> },
+  { name: 'Spotify', icon: <Linkedin className="h-5 w-5" /> },
+  { name: 'X', icon: <Linkedin className="h-5 w-5" /> },
 ];
 
 export function RegisterForm() {
