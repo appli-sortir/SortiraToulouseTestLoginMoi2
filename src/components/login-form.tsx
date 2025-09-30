@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-// CORRECTION : Remplacement des icônes Google et Microsoft (qui n'existent pas ou sont différemment nommées)
+// CORRECTION APPLIQUÉE : Remplacement des icônes manquantes (Google, Microsoft)
 // par Chrome et Windows, qui sont disponibles dans lucide-react.
 import { Loader2, Apple, Facebook, Chrome, Instagram, Linkedin, Windows, Spotify, X } from "lucide-react"; 
 import { useToast } from "@/hooks/use-toast";
@@ -24,11 +24,11 @@ import { useRouter } from "next/navigation";
 const socialProviders = [
   { name: "Apple", icon: <Apple className="h-5 w-5" /> },
   { name: "Facebook", icon: <Facebook className="h-5 w-5" /> },
-  // CORRIGÉ : Utilisation de Chrome pour remplacer l'icône Google.
+  // CORRIGÉ : Utilisation de Chrome
   { name: "Google", icon: <Chrome className="h-5 w-5" /> },
   { name: "Instagram", icon: <Instagram className="h-5 w-5" /> },
   { name: "LinkedIn", icon: <Linkedin className="h-5 w-5" /> },
-  // CORRIGÉ : Utilisation de Windows pour remplacer l'icône Microsoft.
+  // CORRIGÉ : Utilisation de Windows
   { name: "Microsoft", icon: <Windows className="h-5 w-5" /> },
   { name: "Spotify", icon: <Spotify className="h-5 w-5" /> },
   { name: "X", icon: <X className="h-5 w-5" /> },
