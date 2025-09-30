@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+// Ajout des icônes sociales pour la cohérence avec le formulaire de connexion
+import { Loader2, Apple, Facebook, Chrome, Instagram, Linkedin, Windows, Spotify, X } from 'lucide-react'; 
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Separator } from './ui/separator';
@@ -20,6 +21,18 @@ import { Checkbox } from './ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useRouter } from 'next/navigation';
+
+// Définition des fournisseurs sociaux (utilisant les icônes lucide corrigées)
+const socialProviders = [
+  { name: "Apple", icon: <Apple className="h-5 w-5" /> },
+  { name: "Facebook", icon: <Facebook className="h-5 w-5" /> },
+  { name: "Google", icon: <Chrome className="h-5 w-5" /> },
+  { name: "Instagram", icon: <Instagram className="h-5 w-5" /> },
+  { name: "LinkedIn", icon: <Linkedin className="h-5 w-5" /> },
+  { name: "Microsoft", icon: <Windows className="h-5 w-5" /> },
+  { name: "Spotify", icon: <Spotify className="h-5 w-5" /> },
+  { name: "X", icon: <X className="h-5 w-5" /> },
+];
 
 // Fonction de validation du mot de passe
 function validatePassword(password: string) {
@@ -140,10 +153,34 @@ export function RegisterForm() {
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
 
+          {/* Boutons sociaux (Ajoutés pour cohérence) */}
+          <TooltipProvider>
+            <div className="grid grid-cols-4 gap-2 w-full">
+              {socialProviders.map((provider) => (
+                <Tooltip key={provider.name}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-12 w-full"
+                      type="button"
+                    >
+                      {provider.icon}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{provider.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          </TooltipProvider>
+
+          {/* Séparateur pour l'email */}
           <div className="relative w-full">
             <Separator className="absolute top-1/2 -translate-y-1/2" />
             <p className="text-center bg-card px-2 text-xs text-muted-foreground relative">
-              Inscription par email
+              Ou s'inscrire avec email
             </p>
           </div>
 
