@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 // CORRECTION APPLIQUÉE : Remplacement des icônes manquantes (Google, Microsoft)
-// par Chrome et Windows, qui sont disponibles dans lucide-react.
-import { Loader2, Apple, Facebook, Chrome, Instagram, Linkedin, Windows, Spotify, X } from "lucide-react"; 
+// par Chrome et Windows. Remplacement de 'Spotify' par 'Headphones' pour éviter l'erreur de compilation.
+import { Loader2, Apple, Facebook, Chrome, Instagram, Linkedin, Windows, Headphones, X } from "lucide-react"; 
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Separator } from "./ui/separator";
@@ -30,7 +30,8 @@ const socialProviders = [
   { name: "LinkedIn", icon: <Linkedin className="h-5 w-5" /> },
   // CORRIGÉ : Utilisation de Windows
   { name: "Microsoft", icon: <Windows className="h-5 w-5" /> },
-  { name: "Spotify", icon: <Spotify className="h-5 w-5" /> },
+  // CORRIGÉ : Utilisation de Headphones
+  { name: "Spotify", icon: <Headphones className="h-5 w-5" /> },
   { name: "X", icon: <X className="h-5 w-5" /> },
 ];
 
