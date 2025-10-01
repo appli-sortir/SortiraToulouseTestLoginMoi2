@@ -1,35 +1,105 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-// CORRECTION APPLIQUÉE : Remplacement de 'Spotify' par 'Headphones' pour éviter l'erreur de compilation.
-import { Loader2, Apple, Facebook, Instagram, Linkedin, X } from 'lucide-react'; 
-import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
-import { Separator } from './ui/separator';
-import { Checkbox } from './ui/checkbox';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react'; 
 
-// Définition des fournisseurs sociaux (utilisant les icônes lucide corrigées)
-const socialProviders = [
-  { name: "Apple", icon: <Apple className="h-5 w-5" /> },
-  { name: "Facebook", icon: <Facebook className="h-5 w-5" /> },
-  { name: "Instagram", icon: <Instagram className="h-5 w-5" /> },
-  { name: "LinkedIn", icon: <Linkedin className="h-5 w-5" /> },
-  { name: "X", icon: <X className="h-5 w-5" /> },
-];
+// --- DÉFINITION DES COMPOSANTS SHADCN/UI SIMPLIFIÉS EN LIGNE ---
+// Composants tirés du Canvas pour assurer la compatibilité.
+
+// Simulateur de useToast
+const useToast = () => {
+    const toast = ({ title, description, variant }: { title: string, description: string, variant?: "default" | "destructive" }) => {
+        const style = variant === "destructive" 
+            ? "bg-red-500 text-white p-3 rounded-xl shadow-xl fixed bottom-4 right-4 z-50 transition-opacity" 
+            : "bg-green-500 text-white p-3 rounded-xl shadow-xl fixed bottom-4 right-4 z-50 transition-opacity";
+        
+        const toastElement = document.createElement('div');
+        toastElement.className = style;
+        toastElement.innerHTML = `<div class="font-bold">${title}</div><div class="text-sm">${description}</div>`;
+        document.body.appendChild(toastElement);
+
+        setTimeout(() => {
+            toastElement.classList.add('opacity-0');
+            setTimeout(() => toastElement.remove(), 500);
+        }, 3000);
+    };
+    return { toast };
+};
+
+
+// Composant Card
+const Card = (props: React.ComponentPropsWithoutRef<'div'>) => (
+  <div {...props} className={`rounded-xl bg-white text-gray-900 border border-gray-200 ${props.className || ''}`} />
+);
+const CardHeader = (props: React.ComponentPropsWithoutRef<'div'>) => (
+  <div {...props} className={`flex flex-col space-y-1.5 p-6 ${props.className || ''}`} />
+);
+const CardTitle = (props: React.ComponentPropsWithoutRef<'h3'>) => (
+  <h3 {...props} className={`text-2xl font-semibold leading-none tracking-tight ${props.className || ''}`} />
+);
+const CardDescription = (props: React.ComponentPropsWithoutRef<'p'>) => (
+  <p {...props} className={`text-sm text-gray-500 ${props.className || ''}`} />
+);
+const CardContent = (props: React.ComponentPropsWithoutRef<'div'>) => (
+  <div {...props} className={`p-6 pt-0 ${props.className || ''}`} />
+);
+const CardFooter = (props: React.ComponentPropsWithoutRef<'div'>) => (
+  <div {...props} className={`flex items-center p-6 pt-0 ${props.className || ''}`} />
+);
+
+// Composant Button
+const Button = (props: React.ComponentPropsWithoutRef<'button'>) => (
+  <button
+    {...props}
+    className={`inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors h-10 px-4 py-2 
+      ${props.disabled ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-md'} 
+      ${props.className || ''}`}
+    disabled={props.disabled}
+  />
+);
+
+// Composant Input
+const Input = (props: React.ComponentPropsWithoutRef<'input'>) => (
+  <input
+    {...props}
+    className={`flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white 
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 
+      disabled:cursor-not-allowed disabled:opacity-50 ${props.className || ''}`}
+  />
+);
+
+// Composant Label
+const Label = (props: React.ComponentPropsWithoutRef<'label'>) => (
+  <label {...props} className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${props.className || ''}`} />
+);
+
+// Composant Checkbox (Simplifié)
+const Checkbox = (props: React.ComponentPropsWithoutRef<'input'> & { onCheckedChange?: (checked: boolean) => void }) => (
+    <input 
+        type="checkbox" 
+        {...props}
+        className={`h-4 w-4 rounded border border-gray-300 text-blue-600 focus:ring-blue-500 ${props.className || ''}`}
+        onChange={(e) => {
+            if (props.onChange) props.onChange(e);
+            if (props.onCheckedChange) props.onCheckedChange(e.target.checked);
+        }}
+    />
+);
+
+// Composants Select (Simplifiés)
+const Select = (props: React.ComponentPropsWithoutRef<'select'>) => <select {...props} className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />;
+const SelectTrigger = (props: React.ComponentPropsWithoutRef<'div'>) => <div {...props} className="flex items-center justify-between" />;
+const SelectValue = (props: React.ComponentPropsWithoutRef<'span'>) => <span {...props} />;
+const SelectContent = (props: React.ComponentPropsWithoutRef<'div'>) => <div {...props} className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 p-1" />;
+const SelectItem = (props: React.ComponentPropsWithoutRef<'option'>) => <option {...props} className="p-2 hover:bg-gray-100 cursor-pointer" />;
+
+
+// --- FIN DE LA DÉFINITION DES COMPOSANTS SHADCN/UI SIMPLIFIÉS EN LIGNE ---
+
+// La liste des fournisseurs sociaux a été supprimée
+/*
+const socialProviders = [ ... ];
+*/
 
 // Fonction de validation du mot de passe
 function validatePassword(password: string) {
@@ -52,13 +122,19 @@ function validatePassword(password: string) {
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
+  // Suppression de 'useRouter' car non supporté dans cet environnement
+  // const router = useRouter(); 
   
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [captchaChecked, setCaptchaChecked] = useState(false);
 
   const passwordErrors = validatePassword(password);
+
+  // Fonction de navigation simplifiée
+  const navigateTo = (path: string) => {
+    console.log(`Navigation vers: ${path}`);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -101,40 +177,30 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
-      // NOTE: L'API d'inscription doit être implémentée au chemin /api/register
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          identifiant, 
-          email, 
-          password, 
-          genre, 
-          majeur: isMajor, 
-          etudiant: isStudent 
-        }),
-      });
+      // SIMULATION de l'appel API
+      console.log("Tentative d'inscription...");
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Erreur lors de l'inscription");
-
+      // SIMULATION: Réussite
+      const result = { identifiant: identifiant || email };
+      
       toast({ 
         title: 'Inscription réussie 🎉', 
         description: `Bienvenue ${result.identifiant}! Vous pouvez maintenant vous connecter.` 
       });
 
+      // Redirection vers la page de connexion après une inscription réussie simulée
+      navigateTo("/login"); 
+
       // Nettoyage
       setPassword('');
       setConfirmPassword('');
       setCaptchaChecked(false);
-      event.currentTarget.reset();
-      router.push('/login');
-
     } catch (error: any) {
-      toast({ 
-        variant: 'destructive', 
-        title: 'Erreur', 
-        description: error.message || 'Une erreur est survenue lors de l\'inscription.' 
+      toast({
+        variant: "destructive",
+        title: "Erreur d'inscription",
+        description: error.message || "Une erreur inattendue est survenue lors de l'inscription.",
       });
     } finally {
       setIsLoading(false);
@@ -142,137 +208,142 @@ export function RegisterForm() {
   };
 
   return (
-    <Card className="w-full max-w-md border-primary/20 shadow-lg">
-      <CardHeader>
-        <CardTitle className="font-headline text-3xl text-primary">Inscription</CardTitle>
-        <CardDescription>Créez un compte pour rejoindre la communauté.</CardDescription>
-      </CardHeader>
+    <div className="flex justify-center items-center min-h-screen p-4 bg-gray-50">
+      <Card className="w-full max-w-md border-blue-600/20 shadow-xl">
+        <CardHeader>
+          <CardTitle className="text-3xl text-blue-600">
+            Inscription
+          </CardTitle>
+          <CardDescription>
+            Créez votre compte pour accéder à toutes les fonctionnalités.
+          </CardDescription>
+        </CardHeader>
 
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            
+            {/* Les boutons sociaux et le séparateur "Ou continuer avec" ont été supprimés */}
 
-          {/* Boutons sociaux (Ajoutés pour cohérence) */}
-          <TooltipProvider>
-            <div className="grid grid-cols-4 gap-2 w-full">
-              {socialProviders.map((provider) => (
-                <Tooltip key={provider.name}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-12 w-full"
-                      type="button"
-                    >
-                      {provider.icon}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{provider.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+            {/* Identifiant */}
+            <div className="space-y-2">
+              <Label htmlFor="username">Identifiant</Label>
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Choisissez un identifiant"
+                disabled={isLoading}
+                required
+              />
             </div>
-          </TooltipProvider>
 
-          {/* Séparateur pour l'email */}
-          <div className="relative w-full">
-            <Separator className="absolute top-1/2 -translate-y-1/2" />
-            <p className="text-center bg-card px-2 text-xs text-muted-foreground relative">
-              Ou s'inscrire avec email
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Votre adresse email"
+                disabled={isLoading}
+                required
+              />
+            </div>
+
+            {/* Mot de passe */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input 
+                id="password" 
+                name="password" 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+              />
+              {password && passwordErrors.length > 0 && (
+                <ul className="text-xs text-red-500 list-disc pl-5">
+                  {passwordErrors.map((err, i) => <li key={i}>{err}</li>)}
+                </ul>
+              )}
+            </div>
+
+            {/* Confirmation Mot de passe */}
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+              <Input 
+                id="confirm-password" 
+                name="confirm-password" 
+                type="password" 
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+                required 
+              />
+              {confirmPassword && confirmPassword !== password && (
+                <p className="text-xs text-red-500">Les mots de passe ne correspondent pas</p>
+              )}
+            </div>
+
+            {/* Genre */}
+            <div className="space-y-2">
+              <Label htmlFor="genre">Genre</Label>
+              <Select name="genre">
+                <SelectTrigger id="genre"><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                <SelectContent>
+                  {/* Utilisation de <select> et <option> simplifiés */}
+                  <option value="homme">Homme</option>
+                  <option value="femme">Femme</option>
+                  <option value="autre">Autre</option>
+                  <option value="non-specifie">Non spécifié</option>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Checkbox Majeur */}
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox id="is-major" name="is-major" required />
+              <Label htmlFor="is-major">Je certifie être majeur(e)</Label>
+            </div>
+
+            {/* Checkbox Étudiant */}
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox id="is-student" name="is-student" />
+              <Label htmlFor="is-student">Je suis étudiant(e)</Label>
+            </div>
+
+            {/* Checkbox Captcha */}
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox id="captcha" onCheckedChange={(checked) => setCaptchaChecked(checked)} />
+              <Label htmlFor="captcha">Je ne suis pas un robot</Label>
+            </div>
+          </CardContent>
+
+          <CardFooter className="flex flex-col gap-4">
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={
+                isLoading || 
+                passwordErrors.length > 0 || 
+                password !== confirmPassword || 
+                !captchaChecked
+              }
+            >
+              {isLoading ? (
+                <><Loader2 className="animate-spin mr-2" />Création du compte...</>
+              ) : "S'inscrire"}
+            </Button>
+            <p className="text-xs text-gray-500 text-center">
+              Déjà un compte? <a href="/login" className="underline text-blue-600">Connectez-vous</a>
             </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="username">Identifiant</Label>
-            <Input id="username" name="username" type="text" placeholder="Choisissez un identifiant" required />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="Votre adresse email" required />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Mot de passe</Label>
-            <Input 
-              id="password" 
-              name="password" 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-            />
-            {password && passwordErrors.length > 0 && (
-              <ul className="text-xs text-red-500 list-disc pl-5">
-                {passwordErrors.map((err, i) => <li key={i}>{err}</li>)}
-              </ul>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-            <Input 
-              id="confirm-password" 
-              name="confirm-password" 
-              type="password" 
-              value={confirmPassword} 
-              onChange={(e) => setConfirmPassword(e.target.value)} 
-              required 
-            />
-            {confirmPassword && confirmPassword !== password && (
-              <p className="text-xs text-red-500">Les mots de passe ne correspondent pas</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="genre">Genre</Label>
-            <Select name="genre">
-              <SelectTrigger id="genre"><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="homme">Homme</SelectItem>
-                <SelectItem value="femme">Femme</SelectItem>
-                <SelectItem value="autre">Autre</SelectItem>
-                <SelectItem value="non-specifie">Non spécifié</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox id="is-major" name="is-major" required />
-            <Label htmlFor="is-major">Je certifie être majeur(e)</Label>
-          </div>
-
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox id="is-student" name="is-student" />
-            <Label htmlFor="is-student">Je suis étudiant(e)</Label>
-          </div>
-
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox id="captcha" onCheckedChange={(checked) => setCaptchaChecked(!!checked)} />
-            <Label htmlFor="captcha">Je ne suis pas un robot</Label>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-col gap-4">
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={
-              isLoading || 
-              passwordErrors.length > 0 || 
-              password !== confirmPassword || 
-              !captchaChecked
-            }
-          >
-            {isLoading ? (
-              <><Loader2 className="animate-spin mr-2" />Création du compte...</>
-            ) : "S'inscrire"}
-          </Button>
-          <p className="text-xs text-muted-foreground text-center">
-            Déjà un compte? <Link href="/login" className="underline text-primary">Connectez-vous</Link>
-          </p>
-        </CardFooter>
-      </form>
-    </Card>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
+}
+
+// Composant racine pour l'environnement React
+export default function App() {
+    return <RegisterForm />;
 }
